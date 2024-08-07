@@ -1,14 +1,27 @@
 name: CI/CD to EC2
-
 on:
   push:
     branches:
-      - main
-
+      - test
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
-
+    steps:
+    # To clone code to work on
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Set up Node.js 18
+      uses: actions/setup-node@v2
+      with:
+        node-version: 18.x
+    - name: Install dependencies
+      # Use Unix commands
+      run: npm install
+    - name: Run tests
+      run: npm test
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
