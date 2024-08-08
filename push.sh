@@ -14,7 +14,7 @@ commit_message="$1"
 git add .
 git commit -m "$commit_message"
 git push
-act -s EC2_HOST=127.0.0.1 -s EC2_USER=root -s EC2_SSH_PORT=46295
+act -s EC2_HOST=127.0.0.1 -s EC2_USER=root -s EC2_SSH_PORT=37929
 
 # Check the exit status of git push to confirm if it was successful
 if [ $? -eq 0 ]; then
