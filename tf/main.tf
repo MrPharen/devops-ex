@@ -10,7 +10,16 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-east-1"
+  region                      = "us-east-1"
+  s3_use_path_style           = true
+  skip_credentials_validation = true
+  skip_metadata_api_check     = true
+  skip_requesting_account_id  = true
+
+  endpoints {
+    s3 = "http://s3.localhost.localstack.cloud:4566"
+  }
+
 }
 
 resource "aws_security_group" "sg_1" {
@@ -33,41 +42,43 @@ resource "aws_security_group" "sg_1" {
 }
 
 
-resource "aws_key_pair" "kimang_key" {
-  key_name   = "kimang-key"
-  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDhC/kNEer6SHxRh1BWChkxx0Dr4crG1kkqCqPiwFThtHbkuq7pHksB4/+m+oOfBhEndkYGLv2ezLQYClIqm+1NnR2NWv2OrsjwMzU1xmmczS0obzFRxA2uYcninAM13qTqT89wYz7A6rxi4ZeCHgbjya6iz+FIvZcNMZY8CAQuq7e8X2QM4DlllXJ4rbtWhZok7gVrv43lLhOfHQbrjV2fyTla0Eq8PCjjuGG78+8XvSlASaBxkUTR9bHjVXVi0oGgbIeN9Cj8tzzL5kkK6ubCvhiwkd2p2heFgsOPeIQhFrKEO1aj4B0eY0Nwaby+91dlYv6Y5DqPBUr7Z5KdwyOV kimang@KIMs-MacBook-Pro.local"
+resource "aws_key_pair" "songhay-key" {
+  key_name   = "p-key"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCxLfy1ttfrTKXRJU2L8Cdd7qIDuRaIdA1/pQ/pOjuWv43ueUdwhyi7uBmG4Pq7ZMo7z7Mr4Hxnl4bzpvwJyr2rRvqsbsqXJLYeDSSdvl1Ih7qgUK7gOI3Hn3PW3fBamfUAaDbIM3qiuThTZyY6BIWJmmg1QESnrwQNnnaScdrCgwtJ5J9PCGnUyW8QLHOPpkurwh2GczkfdlaZfMh/JuLu/pAd4gPNpMqT7dJZi/NM5+9LKd72XLKIw2nBPUPH76QUPc2x6YGQExOLCKpJ+Dsl9efdDXlwngnn5gTQdoVuQHxy2fXshF1kT3UOgbL8pJLiUOFGG1IV1v65m7Xvng9N dev@DESKTOP-V4PJU36"
 }
 
 resource "aws_instance" "server_1" {
-  ami  = "ami-ff0fea8310f3"
-  instance_type = "t3.micro"
-  count = 2
-  key_name = aws_key_pair.kimang_key.key_name
-  security_groups = [aws_security_group.sg_1.name]
-  # user_data = <<-EOF
+  ami                         = "ami-ff0fea8310f3"
+  instance_type               = "t3.micro"
+  count                       = 2
+  key_name                    = aws_key_pair.songhay-key.key_name
+  security_groups             = [aws_security_group.sg_1.name]
+  user_data                   = <<-EOF
+              #!/bin/bash
+              apt update -y
+              apt install python3 -y
+            EOF
+  user_data_replace_on_change = true
+  # We comment this because we are want to using ansible provisioner (to use configuration management tools)
+  # if we use this, we must use if we need to chnage the user_data we need to down and up server
+  # user_data                   = <<-EOF
   #             #!/bin/bash
-  #             apt update
-  #             apt install git -y
+  #             apt update -y
   #             apt install curl -y
-  #             apt install ping -y
-
+  #             apt install git -y
   #             # Install NVM
   #             curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
   #             . ~/.nvm/nvm.sh
-
   #             # Install Node.js 18
   #             nvm install 18
-
   #             # Install PM2
   #             npm install pm2 -g
-
   #             # Clone Node.js repository
-  #             git clone https://github.com/KimangKhenng/devops-ex /root/devops-ex
-
+  #             git clone https://github.com/songhay168/devops-ex /root/devops-ex
   #             # Navigate to the repository and start the app with PM2
   #             cd /root/devops-ex
   #             npm install
   #             pm2 start app.js --name node-app -- -p 8000
   #           EOF
-  user_data_replace_on_change = true
+  # user_data_replace_on_change = true
 }
